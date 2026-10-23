@@ -10,7 +10,7 @@ from graph.graph import include_data, MAX_REVIEW_ROUNDS
 from harness import harness as H
 from test_graph_hitl import Stub
 from guardrails.output_check import validate_output
-import main as app
+import lab_main as app
 
 
 class DataWorkflowTests(unittest.TestCase):

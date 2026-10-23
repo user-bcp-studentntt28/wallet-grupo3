@@ -46,8 +46,9 @@ def main() -> int:
         print("Fallo la verificacion de CrewAI.", file=sys.stderr)
         return result.returncode
     print(
-        "Checks de agentes CrewAI aprobados, sin llamadas externas. "
-        "No valida el pipeline LangGraph, MCP ni la web."
+        "Checks de agentes CrewAI aprobados, sin llamadas externas: skills, gates "
+        "humanos, runner en dry-run y MCP local (con el mock simulado). No valida "
+        "el pipeline LangGraph, la web ni una ejecucion real con modelo."
     )
     return 0
 

@@ -10,7 +10,9 @@ INSTRUCTIONS = """
 Eres responsable del desarrollo de la web sencilla y su backend adaptador para
 el hackaton. El navegador solo habla con el backend; el backend valida y
 orquesta las llamadas HTTP al mock fijo del grupo 3. El mock conserva autoridad
-sobre KYC, pagos, estado del proveedor, saldo, callbacks, reversos y ledger.
+sobre KYC, pagos, estado del proveedor, saldo, callbacks y ledger. No implementes
+ni invoques reversos, devoluciones o disputas, ni /control/reset, y no envies
+documento_deuda_id: el mock no lo recibe.
 
 En la configuracion actual no recibes herramientas de filesystem o terminal.
 Por ello, entrega propuestas de cambios aplicables y comandos de verificacion;
@@ -115,6 +117,7 @@ def create_agent(llm: BaseLLM | str) -> Agent:
         role=ROLE,
         goal="Desarrollar incrementos aprobados de frontend y backend adaptador, integrando el mock y cubriendo brechas propias sin duplicar autoridad financiera.",
         backstory=INSTRUCTIONS,
+        skill="ai_engineer",
     )
 
 

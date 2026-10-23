@@ -1,9 +1,10 @@
 # Primera entrega: cinco agentes CrewAI
 
 Esta entrega define agentes y tareas reales de CrewAI directamente en
-`agents/`. No conecta estos agentes a `main.py`: ese punto de entrada y los
-tests antiguos siguen perteneciendo al laboratorio LangGraph y no son compatibles
-con los roles nuevos. `tools/verify.py` verifica únicamente la entrega CrewAI.
+`agents/`. `main.py` ya recorre estos roles en orden con verificaciones
+deterministas y levanta la demo (el laboratorio LangGraph anterior y sus tests
+antiguos viven en `lab_main.py` y no son compatibles con los roles nuevos).
+`tools/verify.py` verifica únicamente la entrega CrewAI.
 
 ## Archivos y entregables
 
@@ -59,8 +60,9 @@ El verificador muestra el intérprete efectivo y, si falta CrewAI, indica cómo
 instalarlo con ese mismo Python; no instala dependencias automáticamente.
 
 Las pruebas construyen los cinco agentes y sus tareas con un modelo de prueba
-que falla si se intenta invocarlo. No llaman a modelos, MCP ni mocks y no
-requieren credenciales. No demuestran ejecución multiagente ni operación web.
+que falla si se intenta invocarlo. No llaman a modelos ni al mock real (el MCP
+local se prueba con respuestas simuladas) y no requieren credenciales. No
+demuestran ejecución multiagente con modelo ni operación web.
 También se prueban el diagnóstico de dependencia faltante y la propagación de
 fallos del verificador. Los tests antiguos no se ejecutan ni se presentan como
 aprobados; requieren una migración separada.
@@ -77,12 +79,13 @@ sesión de Copilot lo autentique.
 - La tarea Product Owner usa `human_input=True` para revisión en CrewAI.
   Esa opción solicita feedback: **no implementa por sí sola una aprobación
   explícita, persistente y a prueba de rechazo**.
-- Aún falta el runner que ejecuta primero Product Owner, registra la decisión
-  humana y solo entonces construye/ejecuta la fase de implementación.
-  No encadenar las cinco tareas automáticamente para eludir esa pausa.
-- Faltan servidor MCP local, adaptador de herramientas y prueba de invocación
-  desde CrewAI. Aceptar una lista `tools` no equivale a tener MCP conectado.
-- Faltan web, pruebas funcionales W1–W6 y evidencias de una ejecución real.
+- Los roles cargan una skill especializada (`agents/skills/`); ver
+  [runner.md](runner.md) para el runner secuencial (`run_crew.py`), los gates
+  humanos inicial/final y el MCP local de solo lectura.
+- Pendiente: web, pruebas funcionales W1–W6 y evidencias de una ejecución real
+  con modelo (el entorno necesita credenciales de Copilot).
+- La tarea Product Owner usa `human_input=True`: es feedback, no aprobación. La
+  aprobación es el registro humano `evidence/scope_approval.json`.
 
 Esta entrega permite revisar y repartir los cinco roles sin afirmar que el
 hackaton completo o el gate de aprobación ya estén implementados.

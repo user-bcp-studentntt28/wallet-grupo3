@@ -31,7 +31,7 @@ from harness.harness import run_with_harness, run_to_end, check_security_complia
 from evals.gate_g2 import gate_g2, THRESHOLD                     # noqa: E402
 from guardrails.input_check import validate_snapshot              # noqa: E402
 from guardrails.output_check import validate_output               # noqa: E402
-from main import _clone_or_pull, _snapshot, _detect_type          # noqa: E402
+from lab_main import _clone_or_pull, _snapshot, _detect_type          # noqa: E402
 
 GITHUB_OWNER = os.getenv("GITHUB_OWNER", "")
 GITHUB_REPO  = os.getenv("GITHUB_REPO",  "")

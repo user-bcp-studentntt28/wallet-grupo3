@@ -68,8 +68,11 @@ El flujo principal usa Git y `gh`; no necesita levantar un servidor MCP Git.
 
 ## Ejecutar el flujo
 
+La demo Wallet Perú se levanta con `python main.py` (ver más abajo). El laboratorio
+LangGraph/GitHub original se ejecuta ahora con:
+
 ```sh
-python main.py
+python lab_main.py
 ```
 
 Confirma el tipo de proyecto. Después de cada nodo, usa `s` para aceptar su salida,
@@ -146,10 +149,37 @@ La demo web usa un backend local de la biblioteca estándar de Python; no requie
 instalar dependencias adicionales. Desde la raíz del repositorio:
 
 ```powershell
-python demo_server.py
+python main.py
 ```
 
-Abre `http://127.0.0.1:8000` en el navegador y pulsa **Verificar conexión** para
-consultar el mock del grupo 3 desde el backend. Detén el servidor con `Ctrl+C`.
-Este comando es independiente de `python main.py`, que ejecuta el laboratorio
-LangGraph/GitHub y no levanta la aplicación Wallet.
+`main.py` recorre cinco etapas en el orden de los agentes (Product Owner → Arquitecto/a →
+AI Engineer → QA & Security → Presenter / Timekeeper). Cada etapa verifica la responsabilidad
+de su rol sin llamar a un modelo (alcance y aprobación humana, mapa de endpoints, compilación y
+skills, pruebas, puerto y guion) y, si ninguna falla, levanta el servidor. Opciones útiles:
+`--port 8001`, `--open`, `--strict` (exige la aprobación humana inicial), `--full` (suma las
+pruebas de agentes), `--crew dry-run|real` (ejecuta el runner CrewAI) y `--check-only`.
+Sin `evidence/scope_approval.json` la etapa 1 muestra una advertencia, nunca la inventa.
+`python demo_server.py` levanta solo el servidor, sin las etapas.
+
+Abre `http://127.0.0.1:8000`: primero aparece el login, estilo Yape. **Registrarme** crea un
+usuario `TEST-…` con una clave de 6 dígitos (KYC simulado del mock); si ya estás registrado, el
+sistema te pide **Ingresar** y no te deja registrarte de nuevo. La clave se guarda con hash PBKDF2
+y sal en `evidence/demo_users.json` (ignorado por git); 5 claves erróneas bloquean 60 s. Es una
+protección solo de la pantalla de ingreso: el mock no tiene autenticación y las rutas `/api` no
+exigen sesión. Tras ingresar caes en **Pagos**: ves tu saldo y pagas a un contacto o a un comercio
+las veces que quieras. El mock no tiene recarga: el saldo inicial es el de `wallet-demo` (S/ 1000
+sembrados, compartido por el grupo); tu wallet personal empieza en S/ 0.00. La demo cubre Registro (W1), Pagos y QR
+(W2–W5) y Operaciones (W5–W6) contra el mock del grupo 3, con guardrails por regla.
+Detén el servidor con `Ctrl+C`.
+
+Pruebas de la demo y de los agentes (sin credenciales):
+
+```powershell
+python -m unittest tests.test_demo_routes tests.test_demo_guardrails tests.test_wallet_demo_server
+python tools\verify.py
+python run_crew.py --dry-run     # se detiene sin evidence/scope_approval.json (aprobación humana)
+```
+
+Documentos: [mapa y guardrails](docs/hackaton/mapa-funcionalidades.md),
+[evidencia de la corrida](docs/hackaton/evidencia-demo.md),
+[guion](docs/hackaton/guion-demo.md) y [runner CrewAI/MCP](docs/hackaton/runner.md).

@@ -97,3 +97,22 @@ The workflow SHALL require a human Product Owner's explicit final decision after
 #### Scenario: Final approval is missing or rejected
 - **WHEN** the human Product Owner rejects the result or has not decided
 - **THEN** the demo remains not ready, and no CrewAI agent's output is treated as approval
+
+### Requirement: HA-10 Guardrails gate input, routes, and output
+The demo SHALL apply the repository guardrail pattern (input, tool/route policy, and output rules with rule codes) to every backend call to the mock and SHALL keep every mock operation classified in a published feature map.
+
+#### Scenario: Operation is not mapped or is prohibited
+- **WHEN** the backend or an agent requests an operation that is unmapped, `/control/reset`, or a reversal
+- **THEN** the guardrail denies it by default with its rule code and no request reaches the mock
+
+#### Scenario: State-changing operation lacks human confirmation
+- **WHEN** a payment, manual KYC decision, event control, or settlement alteration is requested without explicit confirmation
+- **THEN** the guardrail blocks it with `DEMO-TOOL-03` and no request reaches the mock
+
+#### Scenario: Input or response carries sensitive data
+- **WHEN** a KYC document is not `TEST-`-prefixed or contains a secret or card pattern, or a mock response contains one
+- **THEN** the guardrail blocks it with its `DEMO-IN`/`DEMO-OUT` rule code and the data is not forwarded or returned to the browser
+
+#### Scenario: Feature map covers the contract
+- **WHEN** the OpenAPI contract of group 3 is compared with the feature map
+- **THEN** every operation is classified exactly once as `ALLOW`, `CONFIRM`, or `DENY` with its criterion and task

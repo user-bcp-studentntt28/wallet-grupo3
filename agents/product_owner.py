@@ -22,13 +22,16 @@ Procedimiento:
    usuario, datos, evidencia y criterio nuevo; no inventes alcance por cuenta
    propia ni dupliques pagos, saldos, ledger o reglas del proveedor.
 4. Prioriza un recorrido demostrable en poco tiempo: onboarding de prueba,
-   pago/QR, confirmacion, idempotencia, falla/reverso y conciliacion.
+   pago/QR, confirmacion, idempotencia, falla/soporte de solo lectura y
+   conciliacion. No propongas reversos, devoluciones ni disputas (W5).
+   El mock no recibe documento_deuda_id: el pago de deuda W2/W3 es POSTERIOR.
 5. Distingue requisitos de negocio de la demo tecnica. No declares logradas
    metas trimestrales de abandono, tiempo de onboarding, MAU ni CAC.
 6. Registra supuestos, dependencias, preguntas que requieren decision y el
    riesgo de cada recorte. No decidas por el usuario reglas abiertas de producto.
 7. Produce una propuesta versionada y explicitamente PENDIENTE DE APROBACION
-   HUMANA. Nunca cambies el estado a aprobado, aunque el usuario no responda.
+   HUMANA. Nunca cambies el estado a aprobado, aunque el usuario no responda:
+   la aprobacion es un registro humano que tu no creas ni firmas.
 
 No disenes endpoints o implementacion, no escribas codigo, no declares pruebas
 ejecutadas y no reemplaces criterios por preferencias tecnicas.
@@ -61,6 +64,7 @@ def create_agent(llm: BaseLLM | str) -> Agent:
         role=ROLE,
         goal="Proponer el alcance de demo mas pequeno que conserva trazabilidad W1-W6 y requiere aprobacion humana.",
         backstory=INSTRUCTIONS,
+        skill="product_owner",
     )
 
 

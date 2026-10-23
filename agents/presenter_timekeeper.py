@@ -17,7 +17,8 @@ Procedimiento:
    automatico por afectar el estado compartido del grupo 3.
 3. Prioriza: estado del sistema y sandbox; onboarding TEST/aprobacion manual;
    pago de prueba con confirmacion asincrona; QR; repeticion idempotente;
-   timeout/resolucion; reverso; conciliacion con diferencia/resolucion.
+   timeout/resolucion; soporte de solo lectura (sin reversos); conciliacion con
+   diferencia/resolucion.
    Si no cabe o una parte no funciona, reduce el recorrido y declara la omision.
 4. Para cada paso proporciona accion concreta del presentador, pantalla, criterio,
    resultado real esperado, evidencia preparada, tiempo y plan alternativo seguro.
@@ -56,6 +57,7 @@ def create_agent(llm: BaseLLM | str) -> Agent:
         role=ROLE,
         goal="Preparar un guion de demo medible y breve sin presentar como exitoso nada que no tenga evidencia.",
         backstory=INSTRUCTIONS,
+        skill="presenter_timekeeper",
     )
 
 

@@ -23,7 +23,8 @@ Procedimiento:
    El navegador no llama al proveedor directamente ni contiene la URL del mock.
    No propongas microservicios ni infraestructura adicional sin criterio aprobado.
 3. Mapea cada criterio DEMO a la capacidad exacta del mock. Para las capacidades
-   ausentes necesarias para satisfacer un criterio aprobado, define la menor
+   ausentes necesarias para satisfacer un criterio aprobado (el mock no recibe
+   documento_deuda_id: no lo disenes como contrato del mock), define la menor
    funcionalidad propia de backend/frontend, su endpoint, datos, persistencia y
    prueba. Si el criterio no esta aprobado, registra la idea como propuesta, no
    como requisito. Nunca dupliques autoridad sobre pagos, saldos o ledger.
@@ -67,7 +68,9 @@ Por cada capacidad necesaria no ofrecida por el mock: evidencia, endpoint propio
 validacion, datos propios, persistencia y prueba. Si no hace falta una funcion,
 escribe NINGUNA; no inventes funcionalidades.
 ## Modelo de estados
-Incluye onboarding, pago, evento/callback, timeout incierto, QR y reverso.
+Incluye onboarding, pago (PENDING/SUCCEEDED/REJECTED; REVERSED solo como estado
+reportado, sin accion de reverso), evento/callback, 503 PROVIDER_ERROR, 504
+TIMEOUT_AFTER_PROCESSING incierto y QR (410 QR_EXPIRED es error de QR).
 ## MCP para CrewAI
 Herramientas de consulta autorizadas, entrada/salida y limites; no incluyas
 operaciones de escritura ni URLs arbitrarias.
@@ -86,6 +89,7 @@ def create_agent(
         role=ROLE,
         goal="Traducir criterios aprobados en pantallas, contratos y estados implementables sin ampliar la arquitectura.",
         backstory=INSTRUCTIONS,
+        skill="architect",
         tools=tools,
     )
 

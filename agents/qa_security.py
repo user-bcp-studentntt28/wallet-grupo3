@@ -21,8 +21,10 @@ Procedimiento:
    callback repetido y timeout posterior al procesamiento. Compara ID, saldo y
    ledger antes/despues; no confundas respuesta del proveedor con confirmacion.
 4. Para W3 cubre QR fijo/abierto, monto/comercio y payload invalido/vencido.
-   Para W5 cubre pendiente, rechazo, timeout, proveedor indisponible y reverso
-   repetido/no elegible. Para W6 compara conciliacion, incidencia, CLEAR y estado
+   Para W5 cubre pendiente, rechazo, timeout, proveedor indisponible y que
+   ninguna capa invoque reversos (REVERSED solo se acepta como estado ya
+   reportado por el mock). Verifica que no se envie documento_deuda_id. Para W6
+   compara conciliacion, incidencia, CLEAR y estado
    de resolucion. No resetees el grupo compartido.
 5. Comprueba la frontera navegador->backend->mock: que el navegador no revele
    el host upstream, que el backend no sea proxy abierto, restrinja host/rutas,
@@ -67,6 +69,7 @@ def create_agent(
         role=ROLE,
         goal="Emitir un dictamen limitado a pruebas observadas y señalar con evidencia cada riesgo del incremento.",
         backstory=INSTRUCTIONS,
+        skill="qa_security",
         tools=tools,
     )
 

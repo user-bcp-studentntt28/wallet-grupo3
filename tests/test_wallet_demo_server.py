@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 import unittest
 from datetime import datetime
@@ -137,10 +138,17 @@ class WalletDemoServerTests(unittest.TestCase):
                 )
 
         self.assertEqual(raised.exception.code, 400)
-        self.assertEqual(
-            json.loads(raised.exception.read())["error"], "INVALID_TEST_IDENTITY"
-        )
+        body = json.loads(raised.exception.read())
+        self.assertEqual(body["error"], "GUARDRAIL_BLOCKED")
+        self.assertEqual(body["ruleCode"], "DEMO-IN-02")
         upstream.assert_not_called()
+
+    def test_guardrail_map_endpoint_publishes_all_operations(self) -> None:
+        status, body = self.get("/api/guardrails")
+        self.assertEqual(status, 200)
+        features = json.loads(body)["features"]
+        self.assertEqual(len(features), 32)
+        self.assertEqual({f["policy"] for f in features}, {"ALLOW", "CONFIRM", "DENY"})
 
     def test_kyc_sends_only_supported_test_fields_to_fixed_route(self) -> None:
         result = {
@@ -279,6 +287,48 @@ class WalletDemoServerTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.code, 404)
         upstream.assert_not_called()
+
+    def test_ui_only_calls_local_backend_and_never_reset_or_reversal_writes(self) -> None:
+        _, script = self.get("/app.js")
+        text = script.decode("utf-8")
+        self.assertNotIn("workers.dev", text)
+        self.assertNotIn("/control/reset", text)
+        self.assertNotIn("reversals\", \"POST\"", text)
+        for path in ("/api/payments", "/api/qrs", "/api/reconciliations", "/api/control/settlements"):
+            self.assertIn(path, text)
+        self.assertIn('payload.replace(/^qrmock:/, "")', text)
+        _, page = self.get("/")
+        html = page.decode("utf-8")
+        for element in ("pay-confirm", "fac-confirm", "alt-confirm", "kyc-decision-confirm"):
+            self.assertIn(f'id="{element}"', html)
+
+    def test_qr_image_library_is_served_locally(self) -> None:
+        status, body = self.get("/vendor/qrcode.js")
+        self.assertEqual(status, 200)
+        self.assertIn(b"QR Code Generator for JavaScript", body)
+        self.assertIn(b"MIT license", body)
+        _, page = self.get("/")
+        self.assertIn(b'src="/vendor/qrcode.js"', page)
+
+    def test_login_gate_validates_before_any_request_and_never_stores_the_password(self) -> None:
+        _, page = self.get("/")
+        html = page.decode("utf-8")
+        self.assertIn('id="login-form"', html)
+        self.assertIn('type="password"', html)
+        self.assertIn('<main id="app-main" hidden>', html)
+        _, script = self.get("/app.js")
+        text = script.decode("utf-8")
+        gate = text.index('!doc.startsWith("TEST-")')
+        digits = text.index("/^\\d{6}$/.test(password)")
+        request = text.index('"/api/auth/register" : "/api/auth/login"')
+        self.assertLess(gate, request)
+        self.assertLess(digits, request)
+        self.assertNotIn("localStorage.setItem(\"walletDemoUsers\"", text)
+        self.assertNotIn("sessionStorage.setItem(USER_SESSION_KEY, password", text)
+        self.assertNotEqual(
+            re.search(r'USER_SESSION_KEY = "([^"]+)"', text).group(1),
+            re.search(r'getItem\("(walletDemoSession)"\)', text).group(1),
+        )
 
     def test_post_is_rejected_until_a_backend_action_is_implemented(self) -> None:
         with self.assertRaises(HTTPError) as raised:

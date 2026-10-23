@@ -1,5 +1,7 @@
 """Shared construction rules; model and tools are supplied by the caller."""
 
+from pathlib import Path
+
 from crewai import Agent, BaseLLM, Task
 from crewai.tools import BaseTool
 
@@ -32,9 +34,49 @@ datos propios minimos de esas funciones, pero nunca crear una segunda fuente de
 verdad financiera, saldo, pago o ledger.
 Los pagos, saldos e idempotencia los decide el mock, nunca el modelo ni una
 implementacion paralela del backend.
+Estados de pago del mock: PENDING, SUCCEEDED, REJECTED y REVERSED (este ultimo
+solo se muestra si el mock ya lo reporta). 202 PENDING no es exito. 410
+QR_EXPIRED es un error de QR, no un estado de pago. 503 PROVIDER_ERROR no crea
+un pago. 504 TIMEOUT_AFTER_PROCESSING es un resultado incierto: se consulta o
+resuelve el mismo pago, nunca se crea un segundo cobro.
+El mock no recibe ni valida documento_deuda_id: no afirmes que lo hace. El qrId
+solo enlaza el QR y el pago del mock.
+La demo no solicita reversos, devoluciones ni disputas (W5) y nunca llama a
+/control/reset. El MCP local es de solo lectura (escenarios, wallet y pago por ID).
+Solo una persona aprueba el alcance inicial y la entrega final; ninguna salida
+de un agente cuenta como aprobacion. QA usa solo las etiquetas APROBADO,
+FALLIDO, NO EJECUTADO y BLOQUEADO, y solo con evidencia observada.
+Guardrails de la demo: reglas DEMO-IN (entrada), DEMO-TOOL (rutas/herramientas)
+y DEMO-OUT (salida); una operacion denegada se informa con su codigo.
 No cambies contratos ni amplifiques el alcance sin aprobacion humana.
 Si falta informacion, identifica el bloqueo; no simules exito.
 """
+
+SKILLS_DIR = Path(__file__).resolve().parent / "skills"
+SKILL_NAMES = (
+    "product_owner",
+    "architect",
+    "ai_engineer",
+    "qa_security",
+    "presenter_timekeeper",
+)
+
+
+class SkillError(RuntimeError):
+    """A required role skill is missing, unreadable, or empty."""
+
+
+def load_skill(name: str) -> str:
+    if name not in SKILL_NAMES:
+        raise SkillError(f"Skill desconocida: {name!r}.")
+    path = SKILLS_DIR / f"{name}.md"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise SkillError(f"No se pudo leer la skill {path}: {error}") from error
+    if not text.strip():
+        raise SkillError(f"La skill {path} esta vacia.")
+    return text.strip()
 
 
 def build_agent(
@@ -43,14 +85,16 @@ def build_agent(
     role: str,
     goal: str,
     backstory: str,
+    skill: str,
     tools: list[BaseTool] | None = None,
 ) -> Agent:
     if isinstance(llm, str) and not llm.strip():
         raise ValueError("Se requiere un modelo configurado explicitamente.")
+    skill_text = load_skill(skill)
     return Agent(
         role=role,
         goal=goal,
-        backstory=f"{backstory}\n{RULES}",
+        backstory=f"{backstory}\nSKILL DEL ROL ({skill}):\n{skill_text}\n{RULES}",
         llm=llm,
         tools=list(tools) if tools is not None else [],
         allow_delegation=False,

@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#f2f5f4" />
     <title>Perú Wallet | Demo Grupo 3</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/vendor/qrcode.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -18,13 +19,86 @@
             <span class="brand-caption">Demo · Grupo 3</span>
           </span>
         </a>
-        <span class="environment-badge">
-          <span class="status-dot" aria-hidden="true"></span>
-          Entorno de demostración
+        <span class="header-actions">
+          <span class="user-chip" id="user-chip" hidden></span>
+          <button class="button button-secondary button-inline" id="btn-logout" type="button" hidden>Salir</button>
+          <span class="environment-badge">
+            <span class="status-dot" aria-hidden="true"></span>
+            Entorno de demostración
+          </span>
         </span>
       </header>
 
-      <main>
+      <section class="login-screen" id="login-screen" aria-labelledby="login-title">
+        <div class="login-card">
+          <p class="eyebrow">Perú Wallet · Demo</p>
+          <h1 id="login-title">Bienvenido</h1>
+          <div class="mode-switch" role="group" aria-label="Ingresar o registrarme">
+            <button class="mode-button is-active" id="mode-login" type="button" aria-pressed="true">Ingresar</button>
+            <button class="mode-button" id="mode-register" type="button" aria-pressed="false">Registrarme</button>
+          </div>
+          <p class="hero-description" id="login-intro">
+            Ingresa con tu usuario de prueba <strong>TEST-</strong> y tu clave de 6 dígitos.
+          </p>
+          <form id="login-form" novalidate>
+            <label class="form-label" for="login-document">Usuario de prueba</label>
+            <input
+              class="form-control"
+              id="login-document"
+              name="document"
+              type="text"
+              maxlength="200"
+              autocomplete="off"
+              placeholder="TEST-USUARIO-001"
+              required
+            />
+            <label class="form-label spaced" for="login-password">Clave de 6 dígitos</label>
+            <input
+              class="form-control"
+              id="login-password"
+              name="password"
+              type="password"
+              inputmode="numeric"
+              maxlength="6"
+              autocomplete="off"
+              placeholder="••••••"
+              required
+            />
+            <div id="register-extra" hidden>
+              <label class="form-label spaced" for="login-password2">Repite tu clave</label>
+              <input
+                class="form-control"
+                id="login-password2"
+                type="password"
+                inputmode="numeric"
+                maxlength="6"
+                autocomplete="off"
+                placeholder="••••••"
+              />
+              <p class="form-help">
+                Se registra con un KYC simulado del mock. Evita claves obvias (111111, 123456).
+              </p>
+              <details class="facilitator-control">
+                <summary>Opciones de facilitador</summary>
+                <label class="form-label spaced" for="login-scenario">Resultado KYC que simulará el mock</label>
+                <select class="form-control" id="login-scenario">
+                  <option value="APPROVED">APPROVED · alta de prueba</option>
+                  <option value="MANUAL_REVIEW">MANUAL_REVIEW · revisión humana</option>
+                  <option value="REJECTED">REJECTED · rechazo</option>
+                  <option value="UNAVAILABLE">UNAVAILABLE · servicio indisponible</option>
+                </select>
+              </details>
+            </div>
+            <p class="form-help" id="login-help">
+              Solo usuarios TEST-; nunca ingreses datos reales. La clave se guarda con hash y sal.
+            </p>
+            <button class="button button-primary" id="btn-login" type="submit">Ingresar</button>
+            <p class="form-message" id="login-message" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
+      <main id="app-main" hidden>
         <section class="hero">
           <div class="hero-copy">
             <p class="eyebrow">Wallet Perú · Hackatón</p>
@@ -95,6 +169,14 @@
             <h2>Registro de usuario</h2>
             <p>Prueba de KYC del mock grupo 3; no es una verificación de identidad real.</p>
           </div>
+          <ol class="stepper" id="onboarding-steps" aria-label="Pasos del registro">
+            <li data-step="1" aria-current="step">Paso 1 · Ingresar documento TEST-</li>
+            <li data-step="2">Paso 2 · Resultado del mock / decisión humana</li>
+            <li data-step="3">Paso 3 · Consultar wallet</li>
+          </ol>
+          <p class="form-help" id="onboarding-next" aria-live="polite">
+            Siguiente acción: ingresa un documento ficticio que empiece con TEST- e inicia el KYC simulado.
+          </p>
           <div class="onboarding-layout">
             <form class="kyc-form" id="kyc-form" novalidate>
               <label class="form-label" for="kyc-document">Documento ficticio</label>
@@ -142,6 +224,30 @@
               <div class="kyc-result" id="kyc-result" aria-live="polite">
                 El resultado del mock aparecerá aquí.
               </div>
+
+              <div class="stack" id="kyc-actions" hidden>
+                <button class="button button-secondary" id="btn-kyc-wallet" type="button">
+                  Consultar wallet en el mock
+                </button>
+                <fieldset class="facilitator-control" id="kyc-decision-box" hidden>
+                  <legend>Decisión humana · solo facilitador</legend>
+                  <p class="form-help">
+                    La revisión manual sigue PENDING hasta que una persona decida.
+                  </p>
+                  <label class="check-row">
+                    <input type="checkbox" id="kyc-decision-confirm" />
+                    Confirmo que soy el facilitador y tomo esta decisión
+                  </label>
+                  <div class="button-row">
+                    <button class="button button-secondary" id="btn-kyc-active" type="button">Activar (ACTIVE)</button>
+                    <button class="button button-secondary" id="btn-kyc-rejected" type="button">Rechazar (REJECTED)</button>
+                  </div>
+                </fieldset>
+                <div class="kyc-result" id="wallet-result" aria-live="polite" hidden></div>
+              </div>
+              <p class="form-help">
+                <a href="/api/evidence/export">Descargar traza de onboarding (JSON sin datos personales)</a>
+              </p>
             </aside>
           </div>
         </section>
@@ -161,12 +267,109 @@
           <div class="notice-card">
             <span class="notice-icon" aria-hidden="true">↗</span>
             <div>
-              <h3>Integración directa con el mock</h3>
+              <h3>Modo prueba · el mock es la fuente de verdad</h3>
               <p>
-                Los estados y resultados se mostrarán tal como los devuelva el proveedor.
-                No se inventará saldo ni se marcará un pago como exitoso localmente.
+                Los estados y saldos se muestran tal como los devuelve el proveedor. El QR es un
+                QR del mock: no representa ni valida un documento de deuda (W3).
               </p>
             </div>
+          </div>
+
+          <div class="flow-grid">
+            <article class="flow-card flow-card-wide flow-order-1">
+              <h3>Mi saldo</h3>
+              <p class="form-help">
+                Saldo inicial de demostración: el mock no tiene recarga y solo <strong>wallet-demo</strong> nace con
+                fondos (compartida por el grupo). Tu wallet personal empieza en S/ 0.00.
+              </p>
+              <label class="form-label" for="wallet-id">Wallet con la que pagas</label>
+              <input class="form-control" id="wallet-id" type="text" value="wallet-demo" autocomplete="off" />
+              <button class="button button-secondary spaced" id="btn-wallet" type="button">Actualizar saldo</button>
+              <div class="kyc-result" id="pay-wallet-result" aria-live="polite">Sin consultar.</div>
+            </article>
+
+            <article class="flow-card flow-card-wide flow-order-3">
+              <details>
+                <summary class="summary-title">Pagar con QR del comercio (opcional)</summary>
+              <label class="form-label spaced" for="qr-amount">Monto del QR (S/) · vacío = abierto</label>
+              <input class="form-control" id="qr-amount" type="text" inputmode="decimal" placeholder="15.00" autocomplete="off" />
+              <label class="form-label spaced" for="qr-ttl">Vigencia (segundos)</label>
+              <input class="form-control" id="qr-ttl" type="number" min="0" max="86400" value="300" />
+              <div class="button-row">
+                <button class="button button-secondary" id="btn-qr-create" type="button">Generar QR</button>
+                <button class="button button-secondary" id="btn-qr-resolve" type="button">Resolver QR</button>
+              </div>
+              <label class="form-label spaced" for="qr-payload">Payload del QR</label>
+              <input class="form-control" id="qr-payload" type="text" placeholder="qrmock:…" autocomplete="off" />
+              <img class="qr-image" id="qr-image" alt="Código QR del mock (modo prueba)" width="168" height="168" hidden />
+              <div class="kyc-result" id="qr-result" aria-live="polite">Sin QR.</div>
+              </details>
+            </article>
+
+            <article class="flow-card flow-card-wide flow-order-2">
+              <h3>Pagar a un contacto o comercio</h3>
+              <div class="field-row">
+                <div>
+                  <label class="form-label" for="pay-recipient">Destino</label>
+                  <select class="form-control" id="pay-recipient">
+                    <option value="contact-demo">Contacto (contact-demo)</option>
+                    <option value="merchant-demo">Comercio (merchant-demo)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" for="pay-amount">Monto (S/)</label>
+                  <input class="form-control" id="pay-amount" type="text" inputmode="decimal" placeholder="15.00" autocomplete="off" />
+                </div>
+              </div>
+              <fieldset class="facilitator-control">
+                <legend>Escenario del proveedor · solo facilitador</legend>
+                <label class="form-label" for="pay-scenario">Resultado simulado</label>
+                <select class="form-control" id="pay-scenario">
+                  <option value="">Predeterminado (APPROVED)</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="DELAYED_APPROVAL">DELAYED_APPROVAL</option>
+                  <option value="REJECTED">REJECTED</option>
+                  <option value="TIMEOUT_AFTER_PROCESSING">TIMEOUT_AFTER_PROCESSING</option>
+                  <option value="PROVIDER_ERROR">PROVIDER_ERROR</option>
+                </select>
+              </fieldset>
+              <label class="check-row">
+                <input type="checkbox" id="pay-confirm" />
+                <span id="pay-confirm-text">Confirmo este pago de prueba</span>
+              </label>
+              <div class="button-row">
+                <button class="button button-primary button-inline" id="btn-pay" type="button">Pagar</button>
+                <button class="button button-secondary" id="btn-retry" type="button" disabled>Reintentar (misma clave)</button>
+                <button class="button button-secondary" id="btn-new-attempt" type="button" disabled>Nuevo intento (nueva clave)</button>
+              </div>
+              <p class="pay-banner" id="pay-banner" aria-live="polite" hidden></p>
+              <div class="kyc-result" id="pay-result" aria-live="polite">Sin pago.</div>
+              <p class="form-help" id="pay-guidance" aria-live="polite"></p>
+
+              <div class="button-row">
+                <button class="button button-secondary" id="btn-status" type="button" disabled>Consultar estado</button>
+                <button class="button button-secondary" id="btn-resolve" type="button" disabled>Resolver con proveedor</button>
+                <button class="button button-secondary" id="btn-receipt" type="button" disabled>Comprobante</button>
+                <button class="button button-secondary" id="btn-history" type="button">Historial</button>
+              </div>
+
+              <fieldset class="facilitator-control">
+                <legend>Controles de prueba · solo facilitador (W4)</legend>
+                <label class="check-row">
+                  <input type="checkbox" id="fac-confirm" />
+                  Confirmo que soy el facilitador y autorizo estas acciones de prueba
+                </label>
+                <div class="button-row">
+                  <button class="button button-secondary" id="btn-conflict" type="button" disabled>Misma clave, monto distinto</button>
+                  <button class="button button-secondary" id="btn-complete" type="button" disabled>Completar proveedor (SUCCEEDED)</button>
+                  <button class="button button-secondary" id="btn-complete-rej" type="button" disabled>Completar proveedor (REJECTED)</button>
+                  <button class="button button-secondary" id="btn-deliver" type="button" disabled>Entregar evento</button>
+                  <button class="button button-secondary" id="btn-deliver-dup" type="button" disabled>Repetir entrega</button>
+                </div>
+              </fieldset>
+              <div class="kyc-result" id="pay-detail" aria-live="polite" hidden></div>
+              <div class="table-scroll" id="history-box" hidden></div>
+            </article>
           </div>
         </section>
 
@@ -178,17 +381,117 @@
           hidden
         >
           <div class="section-heading">
-            <p class="eyebrow">W6 · Operación responsable</p>
+            <p class="eyebrow">W5 · W6 · Operación responsable</p>
             <h2>Operaciones y soporte</h2>
-            <p>Consulta de incidencias, conciliación grupal y evidencia de la demo.</p>
+            <p>Soporte de solo lectura, conciliación grupal y evidencia de la demo.</p>
           </div>
+
+          <div class="flow-grid">
+            <article class="flow-card">
+              <h3>Soporte (solo lectura)</h3>
+              <p class="form-help">Casos y reversos que ya reporta el mock. La demo no inicia reversos, devoluciones ni disputas.</p>
+              <div class="button-row">
+                <button class="button button-secondary" id="btn-support" type="button">Ver casos de soporte</button>
+              </div>
+              <label class="form-label spaced" for="reversal-id">Consultar un reverso existente</label>
+              <input class="form-control" id="reversal-id" type="text" placeholder="rev_…" autocomplete="off" />
+              <button class="button button-secondary spaced" id="btn-reversal" type="button">Consultar reverso</button>
+              <div class="kyc-result" id="support-result" aria-live="polite">Sin consultar.</div>
+            </article>
+
+            <article class="flow-card">
+              <h3>Conciliación (alcance grupal)</h3>
+              <p class="form-help">
+                El mock compara todos los pagos del grupo 3. No es una conciliación diaria, por canal
+                ni bancaria, y no mueve dinero.
+              </p>
+              <div class="button-row">
+                <button class="button button-primary button-inline" id="btn-reconcile" type="button">Ejecutar conciliación</button>
+                <button class="button button-secondary" id="btn-settlements" type="button">Liquidaciones</button>
+                <button class="button button-secondary" id="btn-ledger" type="button">Ledger</button>
+                <button class="button button-secondary" id="btn-incidents" type="button">Incidencias</button>
+              </div>
+              <div class="kyc-result" id="recon-summary" aria-live="polite">Sin ejecutar.</div>
+            </article>
+
+            <article class="flow-card flow-card-wide">
+              <h3>Alterar el reporte · solo facilitador (W6)</h3>
+              <p class="form-help">
+                Cambia solo el reporte del mock (no wallet ni ledger). Requiere confirmación humana;
+                nunca se ejecuta el reinicio del grupo.
+              </p>
+              <div class="field-row">
+                <div>
+                  <label class="form-label" for="alt-payment">ID del pago</label>
+                  <input class="form-control" id="alt-payment" type="text" placeholder="pay_…" autocomplete="off" />
+                </div>
+                <div>
+                  <label class="form-label" for="alt-mode">Modo</label>
+                  <select class="form-control" id="alt-mode">
+                    <option value="AMOUNT">AMOUNT (cambiar monto)</option>
+                    <option value="CLEAR">CLEAR (restaurar)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" for="alt-amount">Monto del reporte (S/)</label>
+                  <input class="form-control" id="alt-amount" type="text" inputmode="decimal" placeholder="1.00" autocomplete="off" />
+                </div>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="alt-confirm" />
+                Confirmo que soy el facilitador y autorizo esta alteración de prueba
+              </label>
+              <button class="button button-secondary" id="btn-alter" type="button">Aplicar alteración</button>
+              <div class="kyc-result" id="alter-result" aria-live="polite" hidden></div>
+            </article>
+
+            <article class="flow-card flow-card-wide">
+              <h3>Vista de comercio (intentos QR de esta sesión)</h3>
+              <p class="form-help">
+                Referencia y hora son evidencia local de la demo; el estado se vuelve a consultar al mock.
+                No entregues el producto mientras el pago siga PENDING.
+              </p>
+              <div class="filter-row">
+                <div>
+                  <label class="form-label" for="mv-ref">Filtrar por referencia</label>
+                  <input class="form-control" id="mv-ref" type="text" placeholder="pay_… o qr_…" autocomplete="off" />
+                </div>
+                <div>
+                  <label class="form-label" for="mv-date">Fecha de captura local</label>
+                  <input class="form-control" id="mv-date" type="date" />
+                </div>
+                <button class="button button-secondary" id="btn-merchant" type="button">Actualizar vista</button>
+              </div>
+              <div class="table-scroll" id="merchant-table" hidden></div>
+              <p class="form-help" id="merchant-note" aria-live="polite"></p>
+            </article>
+
+            <article class="flow-card flow-card-wide">
+              <h3>Registro local de conciliaciones</h3>
+              <p class="form-help">
+                Cada ejecución se registra con su hora local (no es una fecha del proveedor). El filtro es
+                solo sobre este registro; el mock no ofrece corte diario.
+              </p>
+              <div class="filter-row">
+                <div>
+                  <label class="form-label" for="runs-date">Fecha de ejecución local</label>
+                  <input class="form-control" id="runs-date" type="date" />
+                </div>
+                <button class="button button-secondary" id="btn-runs" type="button">Aplicar filtro</button>
+              </div>
+              <div class="table-scroll" id="runs-table" hidden></div>
+            </article>
+          </div>
+
+          <div class="table-scroll" id="ops-table" hidden></div>
+
           <div class="notice-card notice-card-warm">
             <span class="notice-icon" aria-hidden="true">!</span>
             <div>
               <h3>Acciones sensibles requieren aprobación</h3>
               <p>
-                Cualquier acción de control del mock se mantendrá detrás de confirmación
-                humana. No se ejecutará el endpoint de reset.
+                Cualquier acción de control del mock queda detrás de confirmación humana.
+                No se ejecuta el endpoint de reset ni el de reversos.
               </p>
             </div>
           </div>
@@ -197,6 +500,30 @@
             <a class="button button-secondary" href="/api/evidence/export">
               Descargar evidencia JSON
             </a>
+          </div>
+
+          <div class="guardrail-map">
+            <h3>Mapa de funcionalidades y guardrails</h3>
+            <p class="form-help" id="guardrail-summary" aria-live="polite">
+              Cargando el mapa de operaciones del mock…
+            </p>
+            <div class="table-scroll">
+              <table class="guardrail-table">
+                <caption class="visually-hidden">
+                  Operaciones del mock grupo 3, su política, criterio y tarea
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Política</th>
+                    <th scope="col">Operación</th>
+                    <th scope="col">Funcionalidad</th>
+                    <th scope="col">Criterio</th>
+                    <th scope="col">Tarea</th>
+                  </tr>
+                </thead>
+                <tbody id="guardrail-rows"></tbody>
+              </table>
+            </div>
           </div>
         </section>
       </main>

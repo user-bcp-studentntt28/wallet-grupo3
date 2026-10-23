@@ -1,2 +1,4 @@
 # Separate from the legacy LangGraph lab dependencies.
 crewai>=1.15.28,<2
+# Solo para generar la presentación PDF (tools/make_presentation.py).
+reportlab>=4

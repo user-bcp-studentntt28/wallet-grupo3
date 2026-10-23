@@ -111,7 +111,18 @@ Owner reviews the version, acceptance evidence, known gaps, and test results.
 The Product Owner CrewAI agent cannot satisfy this gate. A rejection or missing
 approval keeps the demo from being declared ready.
 
-### 5. Separate product requirements from the earlier demo draft
+### 5. Guardrails reuse the repository pattern (HA-10)
+
+Apply the same three gates the repo teaches: input (fail before spending
+effort), tool/route policy (default deny), and output (rule codes). The single
+`FEATURE_MAP` in `demo_guardrails.py` classifies every OpenAPI operation as
+`ALLOW`, `CONFIRM` (explicit human confirmation), or `DENY` (reset, reversals,
+other groups' data), links it to its criterion and task, and drives the
+backend gate, the MCP allow-list, the published `/api/guardrails` view, and the
+completeness test against the contract. Guardrail denials are recorded as
+non-financial evidence with only their rule code.
+
+### 6. Separate product requirements from the earlier demo draft
 
 Use the six stories as the product target and
 `docs/hackaton/criterios-de-aceptacion.md` as the demo-specific acceptance

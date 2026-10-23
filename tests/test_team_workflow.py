@@ -13,7 +13,7 @@ import graph.nodes as nodes
 from graph.graph import NODES
 from guardrails.output_check import validate_output
 from harness import harness as H
-import main as app
+import lab_main as app
 from test_graph_hitl import Stub
 
 
