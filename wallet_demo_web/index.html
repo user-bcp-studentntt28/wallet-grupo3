@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f5f4" />
+    <title>Perú Wallet | Demo Grupo 3</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Perú Wallet, inicio">
+          <span class="brand-mark" aria-hidden="true">W</span>
+          <span>
+            <span class="brand-name">Perú Wallet</span>
+            <span class="brand-caption">Demo · Grupo 3</span>
+          </span>
+        </a>
+        <span class="environment-badge">
+          <span class="status-dot" aria-hidden="true"></span>
+          Entorno de demostración
+        </span>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Wallet Perú · Hackatón</p>
+            <h1>Una experiencia simple para pagos digitales.</h1>
+            <p class="hero-description">
+              Registro, pagos QR y operaciones conectados al mock del grupo 3.
+              El mock es la fuente de verdad para los resultados financieros.
+            </p>
+          </div>
+          <div class="connection-card">
+            <span class="connection-label">Integración</span>
+            <strong>API mock · Grupo 3</strong>
+            <button class="button button-primary" id="check-mock" type="button">
+              Verificar conexión
+            </button>
+            <p class="connection-status" id="mock-status" aria-live="polite">
+              Aún no se ha consultado el mock.
+            </p>
+          </div>
+        </section>
+
+        <nav class="tabs" aria-label="Secciones de la demo" role="tablist">
+          <button
+            class="tab is-active"
+            id="tab-registro"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panel-registro"
+            data-panel="panel-registro"
+          >
+            <span class="tab-number">01</span> Registro
+          </button>
+          <button
+            class="tab"
+            id="tab-pagos"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-pagos"
+            data-panel="panel-pagos"
+            tabindex="-1"
+          >
+            <span class="tab-number">02</span> Pagos y QR
+          </button>
+          <button
+            class="tab"
+            id="tab-operaciones"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-operaciones"
+            data-panel="panel-operaciones"
+            tabindex="-1"
+          >
+            <span class="tab-number">03</span> Operaciones
+          </button>
+        </nav>
+
+        <section
+          class="content-panel"
+          id="panel-registro"
+          role="tabpanel"
+          aria-labelledby="tab-registro"
+        >
+          <div class="section-heading">
+            <p class="eyebrow">W1 · Incorporación</p>
+            <h2>Registro de usuario</h2>
+            <p>Prueba de KYC del mock grupo 3; no es una verificación de identidad real.</p>
+          </div>
+          <div class="onboarding-layout">
+            <form class="kyc-form" id="kyc-form" novalidate>
+              <label class="form-label" for="kyc-document">Documento ficticio</label>
+              <input
+                class="form-control"
+                id="kyc-document"
+                name="document"
+                type="text"
+                maxlength="200"
+                autocomplete="off"
+                placeholder="TEST-DEMO-001"
+                aria-describedby="kyc-document-help"
+                required
+              />
+              <p class="form-help" id="kyc-document-help">
+                Solo se envía al mock un valor que empieza con TEST-. No ingreses datos reales.
+              </p>
+
+              <fieldset class="facilitator-control">
+                <legend>Escenario del proveedor · solo facilitador</legend>
+                <label class="form-label" for="kyc-scenario">Resultado que simulará el mock</label>
+                <select class="form-control" id="kyc-scenario" name="scenario">
+                  <option value="APPROVED">APPROVED · alta de prueba</option>
+                  <option value="REJECTED">REJECTED · rechazo</option>
+                  <option value="MANUAL_REVIEW">MANUAL_REVIEW · revisión humana</option>
+                  <option value="UNAVAILABLE">UNAVAILABLE · servicio indisponible</option>
+                </select>
+              </fieldset>
+
+              <button class="button button-primary" type="submit">
+                Iniciar KYC simulado
+              </button>
+              <p class="form-message" id="kyc-message" aria-live="polite">
+                No se guardará el valor del documento en la evidencia de la demo.
+              </p>
+            </form>
+
+            <aside class="onboarding-aside">
+              <span class="feature-icon" aria-hidden="true">W1</span>
+              <h3>Alta de prueba, sin datos personales</h3>
+              <p>
+                El resultado, los IDs y el estado de wallet se mostrarán solo si los devuelve
+                la API. La wallet nueva no se presenta como financiada.
+              </p>
+              <div class="kyc-result" id="kyc-result" aria-live="polite">
+                El resultado del mock aparecerá aquí.
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section
+          class="content-panel"
+          id="panel-pagos"
+          role="tabpanel"
+          aria-labelledby="tab-pagos"
+          hidden
+        >
+          <div class="section-heading">
+            <p class="eyebrow">W2 · W3 · W4 · W5</p>
+            <h2>Pagos y QR</h2>
+            <p>Consulta, generación de QR, confirmación de pago e historial de operaciones.</p>
+          </div>
+          <div class="notice-card">
+            <span class="notice-icon" aria-hidden="true">↗</span>
+            <div>
+              <h3>Integración directa con el mock</h3>
+              <p>
+                Los estados y resultados se mostrarán tal como los devuelva el proveedor.
+                No se inventará saldo ni se marcará un pago como exitoso localmente.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="content-panel"
+          id="panel-operaciones"
+          role="tabpanel"
+          aria-labelledby="tab-operaciones"
+          hidden
+        >
+          <div class="section-heading">
+            <p class="eyebrow">W6 · Operación responsable</p>
+            <h2>Operaciones y soporte</h2>
+            <p>Consulta de incidencias, conciliación grupal y evidencia de la demo.</p>
+          </div>
+          <div class="notice-card notice-card-warm">
+            <span class="notice-icon" aria-hidden="true">!</span>
+            <div>
+              <h3>Acciones sensibles requieren aprobación</h3>
+              <p>
+                Cualquier acción de control del mock se mantendrá detrás de confirmación
+                humana. No se ejecutará el endpoint de reset.
+              </p>
+            </div>
+          </div>
+          <div class="evidence-export">
+            <p>La evidencia exportada contiene referencias y horas locales, no documentos ni saldos.</p>
+            <a class="button button-secondary" href="/api/evidence/export">
+              Descargar evidencia JSON
+            </a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Demo educativa · Datos de prueba</span>
+        <span>W1–W6 · Mock grupo 3</span>
+      </footer>
+    </div>
+  </body>
+</html>

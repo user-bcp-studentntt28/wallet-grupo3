@@ -139,3 +139,17 @@ otro nombre antes de cambiar entre seis y siete nodos: los checkpoints de modos
 distintos no se mezclan. Los archivos del producto siguen requiriendo revisión y
 pruebas humanas antes de publicar su PR. No ejecutes migraciones sin verificar
 respaldo, integridad y reversión sobre una copia del producto.
+
+## Levantar la demo Wallet Perú (grupo 3)
+
+La demo web usa un backend local de la biblioteca estándar de Python; no requiere
+instalar dependencias adicionales. Desde la raíz del repositorio:
+
+```powershell
+python demo_server.py
+```
+
+Abre `http://127.0.0.1:8000` en el navegador y pulsa **Verificar conexión** para
+consultar el mock del grupo 3 desde el backend. Detén el servidor con `Ctrl+C`.
+Este comando es independiente de `python main.py`, que ejecuta el laboratorio
+LangGraph/GitHub y no levanta la aplicación Wallet.
